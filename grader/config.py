@@ -17,6 +17,7 @@ def model_paths(name: str) -> tuple[Path, Path]:
     """(model, scaler) paths for a named model folder, e.g. model_paths("synthetic")."""
     return MODELS_DIR / name / "logistic_at.pkl", MODELS_DIR / name / "scaler.pkl"
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-mpnet-base-v2")
+EMBEDDING_DEVICE = os.getenv("EMBEDDING_DEVICE") or None  # None = auto (GPU if available); "cpu" to force
 
 MAX_SCORE = 10  # scores are integers 0..MAX_SCORE per question
 

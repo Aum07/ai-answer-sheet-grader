@@ -6,6 +6,11 @@ website and API (app/main.py) are then placed in front of Gradio's routes: visit
 normal site at "/". Grading runs on CPU. Locally, just use: uvicorn app.main:app
 """
 
+import os
+
+# ZeroGPU pretends a GPU exists; the grader is CPU-only, so pin the embedding model to the CPU.
+os.environ.setdefault("EMBEDDING_DEVICE", "cpu")
+
 # `spaces` (ZeroGPU) must be imported before torch. It only exists on Hugging Face.
 try:
     import spaces

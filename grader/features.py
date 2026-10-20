@@ -36,7 +36,7 @@ def get_embedder() -> Embedder:
     from sentence_transformers import SentenceTransformer
 
     logger.info("Loading embedding model %s", config.EMBEDDING_MODEL)
-    return SentenceTransformer(config.EMBEDDING_MODEL)
+    return SentenceTransformer(config.EMBEDDING_MODEL, device=config.EMBEDDING_DEVICE)
 
 
 @lru_cache(maxsize=1)
