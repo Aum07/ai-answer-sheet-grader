@@ -1,0 +1,56 @@
+{
+  "model": "grader.ordinal.OrdinalLogisticAT (mord.LogisticAT on label ranks)",
+  "trained_on": "Mohler et al. 2011 (all 2,273 open-ended answers, 79 questions), human average 0-5 x 2",
+  "source": "https://huggingface.co/datasets/nkazi/MohlerASAG (CC BY 4.0)",
+  "features": [
+    "Semantic Similarity",
+    "question_student_similarity",
+    "Length Ratio",
+    "coverage_mean",
+    "coverage_frac"
+  ],
+  "alpha": 0.1,
+  "selection": "feature set and alpha chosen by question-grouped CV; metrics below are nested-CV estimates",
+  "cv_metrics": {
+    "alphas_chosen_per_fold": [
+      0.1,
+      30.0,
+      0.1,
+      3.0,
+      30.0
+    ],
+    "n": 2273,
+    "qwk": 0.4285636983489426,
+    "mae": 1.302683677958645,
+    "exact": 0.41091069071711395,
+    "within_1": 0.6647602287725473,
+    "pearson": 0.49115300644654697,
+    "pearson_0_5": 0.49115300644654697,
+    "rmse_0_5": 1.0066322084016788
+  },
+  "human_vs_human": {
+    "n": 2273,
+    "qwk": 0.4913028567990049,
+    "mae": 1.5024197096348437,
+    "exact": 0.5635723713154421,
+    "within_1": 0.5882094148702156,
+    "pearson": 0.589702295647125,
+    "pearson_0_5": 0.5974417402906561,
+    "rmse_0_5": 1.3106177450863208
+  },
+  "integrity_checks_on_real_answers": {
+    "share_flagged": 0.01935767707875055,
+    "by_flag": {
+      "copies_question": 0.0035195776506819184,
+      "keyword_list": 0.007479102507699076,
+      "off_topic": 0.008358996920369555,
+      "possibly_off_topic": 0.029476462824461064
+    },
+    "human_mean_flagged": 5.954545454545454,
+    "human_mean_unflagged": 8.415432929564828,
+    "qwk_without_caps": 0.4285636983489426,
+    "qwk_with_caps": 0.42611235354376087,
+    "pearson_with_caps": 0.4550614084251727
+  },
+  "preprocessing": "answers cleaned (repeated / filler sentences removed) before features"
+}

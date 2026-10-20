@@ -1,0 +1,35 @@
+{
+  "thresholds": {
+    "relevance_min": 0.174,
+    "off_topic_cap": {
+      "abs": 0.025,
+      "margin": 0.48
+    },
+    "off_topic_review": {
+      "abs": 0.1,
+      "margin": 0.3
+    },
+    "keyword_min_words": 5
+  },
+  "evaluation": {
+    "note": "thresholds chosen on half the questions (calibration), reported on the other half (test)",
+    "off_topic_cap_test": {
+      "false_positive_rate": 0.007601351351351352,
+      "detection_rate": 0.3032094594594595
+    },
+    "off_topic_review_test": {
+      "false_positive_rate": 0.028716216216216218,
+      "detection_rate": 0.5971283783783784
+    },
+    "cleaning_test": {
+      "honest_sentences_kept": 0.9765822784810126,
+      "filler_sentences_removed": 0.6021959459459459
+    },
+    "keyword_list_false_positive_by_min_words": {
+      "4": 0.011878574571051475,
+      "5": 0.007479102507699076,
+      "6": 0.004839419269687638
+    },
+    "copies_question_false_positive": 0.0035195776506819184
+  }
+}

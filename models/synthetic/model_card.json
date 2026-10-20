@@ -1,0 +1,36 @@
+{
+  "data": "data\\synthetic\\synthetic_answers.csv",
+  "split": "GroupShuffleSplit by question, 70/15/15, seed 42",
+  "rows": {
+    "train": 3150,
+    "val": 675,
+    "test": 675
+  },
+  "questions": {
+    "train": 1047,
+    "val": 224,
+    "test": 225
+  },
+  "features": [
+    "Semantic Similarity",
+    "Length Ratio",
+    "question_student_similarity",
+    "POS_noun_ratio_diff",
+    "POS_similarity",
+    "flesch_kincaid_ratio",
+    "POS_pos_diversity_diff",
+    "POS_verb_ratio_diff",
+    "POS_adv_ratio_diff",
+    "POS_adj_ratio_diff"
+  ],
+  "logistic_at_alpha": 1.2747,
+  "model": "mord.LogisticAT",
+  "test_metrics": {
+    "n": 675,
+    "qwk": 0.8766302711440027,
+    "mae": 1.1392592592592592,
+    "exact": 0.2696296296296296,
+    "within_1": 0.7185185185185186,
+    "pearson": 0.8795542883050457
+  }
+}

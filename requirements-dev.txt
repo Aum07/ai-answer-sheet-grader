@@ -1,0 +1,6 @@
+-r requirements.txt
+pytest==8.3.5
+httpx==0.28.1
+ruff==0.11.2
+# only for scripts/prepare_mohler.py (downloads the human-marked evaluation set)
+datasets==3.6.0

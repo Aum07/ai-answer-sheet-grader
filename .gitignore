@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+eval_sys/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Local config / secrets
+.env
+
+# Generated
+data/processed/
+data/external/
+data/llm_cache/
+*.log
+temp/
+uploads/
+
+# Large media (keep demo GIFs in docs/, not raw recordings)
+*.mp4
+*.mov
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

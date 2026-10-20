@@ -1,0 +1,19 @@
+[project]
+name = "ai-answer-sheet-grader"
+version = "2.0.0"
+description = "Scores free-text exam answers against a reference answer sheet"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+extend-exclude = ["notebooks"]
+
+[tool.ruff.lint]
+select = ["E", "F", "B"]
+# B008: FastAPI's Depends()/File() defaults are idiomatic; E501: line length handled by formatter
+ignore = ["B008", "B905", "E501"]

@@ -1,0 +1,309 @@
+{
+  "human_vs_human": {
+    "n": 2273,
+    "qwk": 0.4913028567990049,
+    "mae": 1.5024197096348437,
+    "exact": 0.5635723713154421,
+    "within_1": 0.5882094148702156,
+    "pearson": 0.589702295647125,
+    "pearson_0_5": 0.5974417402906561,
+    "rmse_0_5": 1.3106177450863208
+  },
+  "feature_sets": {
+    "all_10_features": {
+      "features": [
+        "Semantic Similarity",
+        "question_student_similarity",
+        "Length Ratio",
+        "POS_noun_ratio_diff",
+        "POS_verb_ratio_diff",
+        "POS_adj_ratio_diff",
+        "POS_adv_ratio_diff",
+        "POS_pos_diversity_diff",
+        "POS_similarity",
+        "flesch_kincaid_ratio"
+      ],
+      "alphas_chosen_per_fold": [
+        3.0,
+        0.3,
+        0.1,
+        10.0,
+        10.0
+      ],
+      "n": 2273,
+      "qwk": 0.4213534856427299,
+      "mae": 1.3167619885613726,
+      "exact": 0.41575010998680156,
+      "within_1": 0.6652001759788825,
+      "pearson": 0.47666610433038054,
+      "pearson_0_5": 0.47666610433038054,
+      "rmse_0_5": 1.0226751665413845
+    },
+    "drop_pos": {
+      "features": [
+        "Semantic Similarity",
+        "question_student_similarity",
+        "Length Ratio",
+        "flesch_kincaid_ratio"
+      ],
+      "alphas_chosen_per_fold": [
+        0.3,
+        0.1,
+        0.1,
+        3.0,
+        3.0
+      ],
+      "n": 2273,
+      "qwk": 0.4116121328792278,
+      "mae": 1.3185217773867135,
+      "exact": 0.4192696876374835,
+      "within_1": 0.6577210734711835,
+      "pearson": 0.47313951317639186,
+      "pearson_0_5": 0.47313951317639186,
+      "rmse_0_5": 1.0226751665413845
+    },
+    "drop_readability": {
+      "features": [
+        "Semantic Similarity",
+        "question_student_similarity",
+        "Length Ratio",
+        "POS_noun_ratio_diff",
+        "POS_verb_ratio_diff",
+        "POS_adj_ratio_diff",
+        "POS_adv_ratio_diff",
+        "POS_pos_diversity_diff",
+        "POS_similarity"
+      ],
+      "alphas_chosen_per_fold": [
+        3.0,
+        0.1,
+        0.1,
+        10.0,
+        3.0
+      ],
+      "n": 2273,
+      "qwk": 0.4198755044133201,
+      "mae": 1.3145622525296965,
+      "exact": 0.4192696876374835,
+      "within_1": 0.6638803343598768,
+      "pearson": 0.47595567380341836,
+      "pearson_0_5": 0.47595567380341836,
+      "rmse_0_5": 1.0235889174309056
+    },
+    "drop_length": {
+      "features": [
+        "Semantic Similarity",
+        "question_student_similarity",
+        "POS_noun_ratio_diff",
+        "POS_verb_ratio_diff",
+        "POS_adj_ratio_diff",
+        "POS_adv_ratio_diff",
+        "POS_pos_diversity_diff",
+        "POS_similarity",
+        "flesch_kincaid_ratio"
+      ],
+      "alphas_chosen_per_fold": [
+        0.1,
+        3.0,
+        0.1,
+        0.1,
+        0.1
+      ],
+      "n": 2273,
+      "qwk": 0.37797920450090516,
+      "mae": 1.3691157061152661,
+      "exact": 0.40211174659040916,
+      "within_1": 0.6528816542014958,
+      "pearson": 0.43522884566627895,
+      "pearson_0_5": 0.43522884566627895,
+      "rmse_0_5": 1.054811113338223
+    },
+    "meaning_plus_length": {
+      "features": [
+        "Semantic Similarity",
+        "question_student_similarity",
+        "Length Ratio"
+      ],
+      "alphas_chosen_per_fold": [
+        0.1,
+        0.1,
+        10.0,
+        0.1,
+        30.0
+      ],
+      "n": 2273,
+      "qwk": 0.41673842861597865,
+      "mae": 1.3123625164980202,
+      "exact": 0.418389793224813,
+      "within_1": 0.6586009678838539,
+      "pearson": 0.4816304210764015,
+      "pearson_0_5": 0.4816304210764015,
+      "rmse_0_5": 1.0168509830301573
+    },
+    "meaning_only": {
+      "features": [
+        "Semantic Similarity",
+        "question_student_similarity"
+      ],
+      "alphas_chosen_per_fold": [
+        3.0,
+        0.1,
+        0.1,
+        1.0,
+        0.1
+      ],
+      "n": 2273,
+      "qwk": 0.34411816439082055,
+      "mae": 1.3814342278926528,
+      "exact": 0.41223053233611967,
+      "within_1": 0.6418829740431148,
+      "pearson": 0.4150990358769096,
+      "pearson_0_5": 0.4150990358769096,
+      "rmse_0_5": 1.0678685119531062
+    },
+    "similarity_only": {
+      "features": [
+        "Semantic Similarity"
+      ],
+      "alphas_chosen_per_fold": [
+        0.1,
+        0.1,
+        10.0,
+        3.0,
+        10.0
+      ],
+      "n": 2273,
+      "qwk": 0.35693031830818867,
+      "mae": 1.368675758908931,
+      "exact": 0.4135503739551254,
+      "within_1": 0.6432028156621206,
+      "pearson": 0.4329004638168724,
+      "pearson_0_5": 0.4329004638168724,
+      "rmse_0_5": 1.0567383765532614
+    },
+    "all_plus_coverage": {
+      "features": [
+        "Semantic Similarity",
+        "question_student_similarity",
+        "Length Ratio",
+        "POS_noun_ratio_diff",
+        "POS_verb_ratio_diff",
+        "POS_adj_ratio_diff",
+        "POS_adv_ratio_diff",
+        "POS_pos_diversity_diff",
+        "POS_similarity",
+        "flesch_kincaid_ratio",
+        "coverage_mean",
+        "coverage_frac"
+      ],
+      "alphas_chosen_per_fold": [
+        10.0,
+        30.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "n": 2273,
+      "qwk": 0.42769189714553624,
+      "mae": 1.3088429388473384,
+      "exact": 0.4126704795424549,
+      "within_1": 0.6612406511218654,
+      "pearson": 0.4826206738649152,
+      "pearson_0_5": 0.4826206738649152,
+      "rmse_0_5": 1.0153355559838584
+    },
+    "drop_readability_plus_coverage": {
+      "features": [
+        "Semantic Similarity",
+        "question_student_similarity",
+        "Length Ratio",
+        "POS_noun_ratio_diff",
+        "POS_verb_ratio_diff",
+        "POS_adj_ratio_diff",
+        "POS_adv_ratio_diff",
+        "POS_pos_diversity_diff",
+        "POS_similarity",
+        "coverage_mean",
+        "coverage_frac"
+      ],
+      "alphas_chosen_per_fold": [
+        3.0,
+        30.0,
+        0.3,
+        0.1,
+        30.0
+      ],
+      "n": 2273,
+      "qwk": 0.4290541892857209,
+      "mae": 1.3110426748790145,
+      "exact": 0.4078310602727673,
+      "within_1": 0.6616805983282006,
+      "pearson": 0.4843419455674202,
+      "pearson_0_5": 0.4843419455674202,
+      "rmse_0_5": 1.0140890467846613
+    },
+    "meaning_length_coverage": {
+      "features": [
+        "Semantic Similarity",
+        "question_student_similarity",
+        "Length Ratio",
+        "coverage_mean",
+        "coverage_frac"
+      ],
+      "alphas_chosen_per_fold": [
+        0.1,
+        30.0,
+        0.1,
+        3.0,
+        30.0
+      ],
+      "n": 2273,
+      "qwk": 0.4285636983489426,
+      "mae": 1.302683677958645,
+      "exact": 0.41091069071711395,
+      "within_1": 0.6647602287725473,
+      "pearson": 0.49115300644654697,
+      "pearson_0_5": 0.49115300644654697,
+      "rmse_0_5": 1.0066322084016788
+    },
+    "meaning_coverage": {
+      "features": [
+        "Semantic Similarity",
+        "question_student_similarity",
+        "coverage_mean",
+        "coverage_frac"
+      ],
+      "alphas_chosen_per_fold": [
+        10.0,
+        10.0,
+        3.0,
+        0.1,
+        30.0
+      ],
+      "n": 2273,
+      "qwk": 0.36844608939147117,
+      "mae": 1.3620765508139023,
+      "exact": 0.4029916410030796,
+      "within_1": 0.6572811262648482,
+      "pearson": 0.4366174242050237,
+      "pearson_0_5": 0.4366174242050237,
+      "rmse_0_5": 1.0510506339410044
+    }
+  },
+  "selected": "meaning_length_coverage",
+  "final_alpha": 0.1,
+  "integrity": {
+    "share_flagged": 0.01935767707875055,
+    "by_flag": {
+      "copies_question": 0.0035195776506819184,
+      "keyword_list": 0.007479102507699076,
+      "off_topic": 0.008358996920369555,
+      "possibly_off_topic": 0.029476462824461064
+    },
+    "human_mean_flagged": 5.954545454545454,
+    "human_mean_unflagged": 8.415432929564828,
+    "qwk_without_caps": 0.4285636983489426,
+    "qwk_with_caps": 0.42611235354376087,
+    "pearson_with_caps": 0.4550614084251727
+  }
+}

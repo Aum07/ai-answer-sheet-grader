@@ -1,0 +1,28 @@
+# Runtime dependencies. Versions pinned to what the shipped model was trained with.
+# scikit-learn / numpy / mord must match the pickled model in models/.
+fastapi==0.115.12
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+pydantic==2.10.6
+
+numpy==1.26.4
+pandas==2.2.3
+scikit-learn==1.6.1
+mord==0.7
+joblib==1.4.2
+
+sentence-transformers==3.4.1
+torch==2.6.0
+nltk==3.9.1
+textstat==0.7.5
+# textstat 0.7.5 crashes (KeyError) with cmudict >= 1.1; pin the versions it was trained with
+cmudict==1.0.32
+pyphen==0.17.2
+
+PyMuPDF==1.25.3
+pytesseract==0.3.13
+Pillow==11.1.0
+reportlab==4.4.1
+
+# LLM grader (optional; needs OPENAI_API_KEY)
+openai==1.64.0

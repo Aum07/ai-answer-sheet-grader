@@ -1,0 +1,14 @@
+.git
+.github
+.venv
+venv
+eval_sys
+__pycache__
+*.pyc
+.env
+data
+notebooks
+tests
+docs
+reports
+*.mp4

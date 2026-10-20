@@ -1,0 +1,104 @@
+{
+  "n_answers": 2273,
+  "n_questions": 79,
+  "results": {
+    "human_vs_human": {
+      "n": 2273,
+      "qwk": 0.4913028567990049,
+      "mae": 1.5024197096348437,
+      "exact": 0.5635723713154421,
+      "within_1": 0.5882094148702156,
+      "pearson": 0.589702295647125,
+      "pearson_0_5": 0.5974417402906561,
+      "rmse_0_5": 1.3106177450863208
+    },
+    "classic_model": {
+      "n": 2273,
+      "qwk": 0.4311854684309525,
+      "mae": 1.302683677958645,
+      "exact": 0.41003079630444345,
+      "within_1": 0.6638803343598768,
+      "pearson": 0.4917965900775981,
+      "pearson_0_5": 0.4917965900775981,
+      "rmse_0_5": 1.0057577313480122
+    },
+    "llm": {
+      "n": 2273,
+      "qwk": 0.5053102745287874,
+      "mae": 2.310162780466344,
+      "exact": 0.21249450065992082,
+      "within_1": 0.42542894852617685,
+      "pearson": 0.7178866465949527,
+      "pearson_0_5": 0.7178866465949527,
+      "rmse_0_5": 1.525736102843915
+    },
+    "hybrid_mean": {
+      "n": 2273,
+      "qwk": 0.6681588110213628,
+      "mae": 1.289925208974923,
+      "exact": 0.3286405631324241,
+      "within_1": 0.6009678838539375,
+      "pearson": 0.7196278306583125,
+      "pearson_0_5": 0.7196278306583125,
+      "rmse_0_5": 0.8914957253092192
+    }
+  },
+  "usage": {
+    "model": "gpt-4o-mini",
+    "prompt_version": "v1",
+    "api_calls": 152,
+    "cached_answers": 145,
+    "input_tokens": 121881,
+    "output_tokens": 59477,
+    "estimated_cost_usd": 0.1016,
+    "api_seconds": 645.5,
+    "failed_answers": 0
+  },
+  "attacks": {
+    "original_mean": 3.3666666666666667,
+    "attacks": {
+      "padding": {
+        "expected": "no increase",
+        "mean_score": 2.3533333333333335,
+        "mean_change": -1.0133333333333334,
+        "share_scored_8_plus": 0.006666666666666667
+      },
+      "repetition": {
+        "expected": "no increase",
+        "mean_score": 3.4466666666666668,
+        "mean_change": 0.08,
+        "share_scored_8_plus": 0.013333333333333334
+      },
+      "copy_question": {
+        "expected": "decrease",
+        "mean_score": 0.0,
+        "mean_change": -3.3666666666666667,
+        "share_scored_8_plus": 0.0
+      },
+      "keyword_stuffing": {
+        "expected": "no increase",
+        "mean_score": 5.973333333333334,
+        "mean_change": 2.6066666666666665,
+        "share_scored_8_plus": 0.32
+      },
+      "truncation": {
+        "expected": "decrease",
+        "mean_score": 2.2266666666666666,
+        "mean_change": -1.14,
+        "share_scored_8_plus": 0.0
+      },
+      "off_topic": {
+        "expected": "decrease",
+        "mean_score": 0.3933333333333333,
+        "mean_change": -2.973333333333333,
+        "share_scored_8_plus": 0.0
+      },
+      "copy_reference": {
+        "expected": "increase",
+        "mean_score": 10.0,
+        "mean_change": 6.633333333333334,
+        "share_scored_8_plus": 1.0
+      }
+    }
+  }
+}

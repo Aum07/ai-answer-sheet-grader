@@ -1,0 +1,314 @@
+{
+  "n_answers": 150,
+  "seed": 42,
+  "results": {
+    "mohler": {
+      "defences_off": {
+        "original_mean": 8.3,
+        "attacks": {
+          "padding": {
+            "description": "append ~70 words of fluent, content-free filler",
+            "expected": "no increase",
+            "mean_score": 9.473333333333333,
+            "mean_change": 1.1733333333333333,
+            "share_increased": 0.7666666666666667,
+            "share_scored_8_plus": 0.9266666666666666,
+            "share_flagged": null,
+            "share_capped": null
+          },
+          "repetition": {
+            "description": "the same answer written twice",
+            "expected": "no increase",
+            "mean_score": 8.673333333333334,
+            "mean_change": 0.37333333333333335,
+            "share_increased": 0.34,
+            "share_scored_8_plus": 0.84,
+            "share_flagged": null,
+            "share_capped": null
+          },
+          "copy_question": {
+            "description": "answer replaced by the question text",
+            "expected": "decrease",
+            "mean_score": 7.826666666666667,
+            "mean_change": -0.47333333333333333,
+            "share_increased": 0.22,
+            "share_scored_8_plus": 0.6333333333333333,
+            "share_flagged": null,
+            "share_capped": null
+          },
+          "keyword_stuffing": {
+            "description": "15 key terms from the reference, no sentences",
+            "expected": "no increase",
+            "mean_score": 9.833333333333334,
+            "mean_change": 1.5333333333333334,
+            "share_increased": 0.8,
+            "share_scored_8_plus": 0.98,
+            "share_flagged": null,
+            "share_capped": null
+          },
+          "truncation": {
+            "description": "only the first half of the answer",
+            "expected": "decrease",
+            "mean_score": 7.36,
+            "mean_change": -0.94,
+            "share_increased": 0.06,
+            "share_scored_8_plus": 0.56,
+            "share_flagged": null,
+            "share_capped": null
+          },
+          "off_topic": {
+            "description": "a real answer to a different question",
+            "expected": "decrease",
+            "mean_score": 6.786666666666667,
+            "mean_change": -1.5133333333333334,
+            "share_increased": 0.17333333333333334,
+            "share_scored_8_plus": 0.32666666666666666,
+            "share_flagged": null,
+            "share_capped": null
+          },
+          "copy_reference": {
+            "description": "control: the model answer itself",
+            "expected": "increase",
+            "mean_score": 10.0,
+            "mean_change": 1.7,
+            "share_increased": 0.8266666666666667,
+            "share_scored_8_plus": 1.0,
+            "share_flagged": null,
+            "share_capped": null
+          }
+        }
+      },
+      "defences_on": {
+        "original_mean": 8.153333333333334,
+        "attacks": {
+          "padding": {
+            "description": "append ~70 words of fluent, content-free filler",
+            "expected": "no increase",
+            "mean_score": 8.78,
+            "mean_change": 0.6266666666666667,
+            "share_increased": 0.36,
+            "share_scored_8_plus": 0.8466666666666667,
+            "share_flagged": 0.06666666666666667,
+            "share_capped": 0.006666666666666667
+          },
+          "repetition": {
+            "description": "the same answer written twice",
+            "expected": "no increase",
+            "mean_score": 8.253333333333334,
+            "mean_change": 0.1,
+            "share_increased": 0.12,
+            "share_scored_8_plus": 0.7933333333333333,
+            "share_flagged": 0.07333333333333333,
+            "share_capped": 0.03333333333333333
+          },
+          "copy_question": {
+            "description": "answer replaced by the question text",
+            "expected": "decrease",
+            "mean_score": 2.1933333333333334,
+            "mean_change": -5.96,
+            "share_increased": 0.013333333333333334,
+            "share_scored_8_plus": 0.02666666666666667,
+            "share_flagged": 0.9666666666666667,
+            "share_capped": 0.9666666666666667
+          },
+          "keyword_stuffing": {
+            "description": "15 key terms from the reference, no sentences",
+            "expected": "no increase",
+            "mean_score": 3.466666666666667,
+            "mean_change": -4.6866666666666665,
+            "share_increased": 0.14666666666666667,
+            "share_scored_8_plus": 0.17333333333333334,
+            "share_flagged": 0.8066666666666666,
+            "share_capped": 0.8066666666666666
+          },
+          "truncation": {
+            "description": "only the first half of the answer",
+            "expected": "decrease",
+            "mean_score": 7.113333333333333,
+            "mean_change": -1.04,
+            "share_increased": 0.07333333333333333,
+            "share_scored_8_plus": 0.5266666666666666,
+            "share_flagged": 0.14,
+            "share_capped": 0.04666666666666667
+          },
+          "off_topic": {
+            "description": "a real answer to a different question",
+            "expected": "decrease",
+            "mean_score": 5.773333333333333,
+            "mean_change": -2.38,
+            "share_increased": 0.16,
+            "share_scored_8_plus": 0.2866666666666667,
+            "share_flagged": 0.5466666666666666,
+            "share_capped": 0.24666666666666667
+          },
+          "copy_reference": {
+            "description": "control: the model answer itself",
+            "expected": "increase",
+            "mean_score": 10.0,
+            "mean_change": 1.8466666666666667,
+            "share_increased": 0.8333333333333334,
+            "share_scored_8_plus": 1.0,
+            "share_flagged": 0.0,
+            "share_capped": 0.0
+          }
+        },
+        "honest_answers_flagged": 0.06666666666666667,
+        "honest_answers_capped": 0.02666666666666667
+      }
+    },
+    "synthetic": {
+      "defences_off": {
+        "original_mean": 7.42,
+        "attacks": {
+          "padding": {
+            "description": "append ~70 words of fluent, content-free filler",
+            "expected": "no increase",
+            "mean_score": 10.0,
+            "mean_change": 2.58,
+            "share_increased": 0.6133333333333333,
+            "share_scored_8_plus": 1.0,
+            "share_flagged": null,
+            "share_capped": null
+          },
+          "repetition": {
+            "description": "the same answer written twice",
+            "expected": "no increase",
+            "mean_score": 8.953333333333333,
+            "mean_change": 1.5333333333333334,
+            "share_increased": 0.6133333333333333,
+            "share_scored_8_plus": 0.8466666666666667,
+            "share_flagged": null,
+            "share_capped": null
+          },
+          "copy_question": {
+            "description": "answer replaced by the question text",
+            "expected": "decrease",
+            "mean_score": 5.866666666666666,
+            "mean_change": -1.5533333333333332,
+            "share_increased": 0.18666666666666668,
+            "share_scored_8_plus": 0.32,
+            "share_flagged": null,
+            "share_capped": null
+          },
+          "keyword_stuffing": {
+            "description": "15 key terms from the reference, no sentences",
+            "expected": "no increase",
+            "mean_score": 5.6,
+            "mean_change": -1.82,
+            "share_increased": 0.18,
+            "share_scored_8_plus": 0.14666666666666667,
+            "share_flagged": null,
+            "share_capped": null
+          },
+          "truncation": {
+            "description": "only the first half of the answer",
+            "expected": "decrease",
+            "mean_score": 4.406666666666666,
+            "mean_change": -3.013333333333333,
+            "share_increased": 0.0,
+            "share_scored_8_plus": 0.20666666666666667,
+            "share_flagged": null,
+            "share_capped": null
+          },
+          "off_topic": {
+            "description": "a real answer to a different question",
+            "expected": "decrease",
+            "mean_score": 6.866666666666666,
+            "mean_change": -0.5533333333333333,
+            "share_increased": 0.34,
+            "share_scored_8_plus": 0.5333333333333333,
+            "share_flagged": null,
+            "share_capped": null
+          },
+          "copy_reference": {
+            "description": "control: the model answer itself",
+            "expected": "increase",
+            "mean_score": 10.0,
+            "mean_change": 2.58,
+            "share_increased": 0.6133333333333333,
+            "share_scored_8_plus": 1.0,
+            "share_flagged": null,
+            "share_capped": null
+          }
+        }
+      },
+      "defences_on": {
+        "original_mean": 7.266666666666667,
+        "attacks": {
+          "padding": {
+            "description": "append ~70 words of fluent, content-free filler",
+            "expected": "no increase",
+            "mean_score": 8.753333333333334,
+            "mean_change": 1.4866666666666666,
+            "share_increased": 0.35333333333333333,
+            "share_scored_8_plus": 0.8066666666666666,
+            "share_flagged": 0.06666666666666667,
+            "share_capped": 0.006666666666666667
+          },
+          "repetition": {
+            "description": "the same answer written twice",
+            "expected": "no increase",
+            "mean_score": 7.74,
+            "mean_change": 0.47333333333333333,
+            "share_increased": 0.16666666666666666,
+            "share_scored_8_plus": 0.62,
+            "share_flagged": 0.07333333333333333,
+            "share_capped": 0.03333333333333333
+          },
+          "copy_question": {
+            "description": "answer replaced by the question text",
+            "expected": "decrease",
+            "mean_score": 1.82,
+            "mean_change": -5.446666666666666,
+            "share_increased": 0.04,
+            "share_scored_8_plus": 0.0,
+            "share_flagged": 0.9666666666666667,
+            "share_capped": 0.9666666666666667
+          },
+          "keyword_stuffing": {
+            "description": "15 key terms from the reference, no sentences",
+            "expected": "no increase",
+            "mean_score": 2.7866666666666666,
+            "mean_change": -4.48,
+            "share_increased": 0.08666666666666667,
+            "share_scored_8_plus": 0.05333333333333334,
+            "share_flagged": 0.8066666666666666,
+            "share_capped": 0.8066666666666666
+          },
+          "truncation": {
+            "description": "only the first half of the answer",
+            "expected": "decrease",
+            "mean_score": 4.3,
+            "mean_change": -2.966666666666667,
+            "share_increased": 0.0,
+            "share_scored_8_plus": 0.2,
+            "share_flagged": 0.14,
+            "share_capped": 0.04666666666666667
+          },
+          "off_topic": {
+            "description": "a real answer to a different question",
+            "expected": "decrease",
+            "mean_score": 5.366666666666666,
+            "mean_change": -1.9,
+            "share_increased": 0.28,
+            "share_scored_8_plus": 0.36666666666666664,
+            "share_flagged": 0.5466666666666666,
+            "share_capped": 0.24666666666666667
+          },
+          "copy_reference": {
+            "description": "control: the model answer itself",
+            "expected": "increase",
+            "mean_score": 10.0,
+            "mean_change": 2.7333333333333334,
+            "share_increased": 0.62,
+            "share_scored_8_plus": 1.0,
+            "share_flagged": 0.0,
+            "share_capped": 0.0
+          }
+        },
+        "honest_answers_flagged": 0.06666666666666667,
+        "honest_answers_capped": 0.02666666666666667
+      }
+    }
+  }
+}
