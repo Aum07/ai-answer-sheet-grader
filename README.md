@@ -2,7 +2,7 @@
 
 Upload a teacher's reference answer sheet and a class's answer sheets (PDF); get a 0–10 score per question, a class dashboard, and PDF reports for every student.
 
-**▶ [Live demo](https://huggingface.co/spaces/Aum07/ai-answer-sheet-grader)**: click **Try the demo** to grade six sample sheets. *(Free hosting sleeps when idle; the first visit can take about a minute to wake up.)*
+**▶ [Live demo](https://huggingface.co/spaces/Aum07/ai-answer-sheet-grader)**: click **Try the demo** to grade six sample sheets. The demo runs the **synthetic multi-subject model** (`MODEL_NAME=synthetic`), since uploads can be from any subject; the Mohler model is trained only on computer-science answers (see [Results](#results) for how the two compare). *(Free hosting sleeps when idle; the first visit can take about a minute to wake up.)*
 
 <!-- Add a demo GIF here: docs/demo.gif (record the upload -> results flow) -->
 

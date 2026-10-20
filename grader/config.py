@@ -7,8 +7,11 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 
 # Which trained model the app uses: a folder under models/ ("mohler" = trained on real,
 # human-marked answers; "synthetic" = trained on the LLM-generated dataset).
-MODEL_NAME = os.getenv("MODEL_NAME", "mohler")
 MODELS_DIR = ROOT_DIR / "models"
+MODEL_NAME = (os.getenv("MODEL_NAME") or "mohler").strip().lower()
+if not (MODELS_DIR / MODEL_NAME / "logistic_at.pkl").exists():  # empty / misspelled name -> default
+    print(f"MODEL_NAME={MODEL_NAME!r} not found in {MODELS_DIR}; using 'mohler'")
+    MODEL_NAME = "mohler"
 MODEL_PATH = Path(os.getenv("MODEL_PATH", MODELS_DIR / MODEL_NAME / "logistic_at.pkl"))
 SCALER_PATH = Path(os.getenv("SCALER_PATH", MODELS_DIR / MODEL_NAME / "scaler.pkl"))
 

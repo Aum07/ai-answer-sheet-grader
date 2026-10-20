@@ -11,6 +11,10 @@ import os
 # ZeroGPU pretends a GPU exists; the grader is CPU-only, so pin the embedding model to the CPU.
 os.environ.setdefault("EMBEDDING_DEVICE", "cpu")
 
+# The live demo uses the multi-subject synthetic model (uploads can be from any subject).
+if not os.environ.get("MODEL_NAME", "").strip():
+    os.environ["MODEL_NAME"] = "synthetic"
+
 # `spaces` (ZeroGPU) must be imported before torch. It only exists on Hugging Face.
 try:
     import spaces
