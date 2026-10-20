@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Answer Sheets - AI Evaluation System</title>
-    <link rel="stylesheet" href="/static/css/styles.css?v=2.0.3">
+    <link rel="stylesheet" href="/static/css/styles.css?v=2.0.4">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
@@ -85,7 +85,17 @@
             <div class="col-md-8 animate__animated animate__fadeInRight">
                 <div class="card shadow-lg">
                     <div class="card-body p-4">
-                        <h5 class="card-title mb-4">Upload Files</h5>
+                        <div class="alert alert-primary d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+                            <div>
+                                <strong><i class="fas fa-flask me-1"></i>No PDFs to hand?</strong><br>
+                                <span class="small">Grade 6 built-in sample sheets (5 AI/ML questions, strong to weak answers) in one click.</span>
+                            </div>
+                            <button id="demoBtn" type="button" class="btn btn-primary btn-lg text-nowrap">
+                                <i class="fas fa-play me-2"></i>Try the demo
+                            </button>
+                        </div>
+
+                        <h5 class="card-title mb-4">Or upload your own files</h5>
                         
                         <div class="mb-4">
                             <label class="form-label fw-bold">Reference Answer Sheet</label>
@@ -102,12 +112,6 @@
                         <button id="submitBtn" class="btn btn-primary btn-lg w-100 mt-3" disabled>
                             <i class="fas fa-check-circle me-2"></i>Evaluate Answer Sheets
                         </button>
-                        <div class="text-center mt-3">
-                            <span class="text-muted">No PDFs to hand?</span>
-                            <button id="demoBtn" type="button" class="btn btn-outline-primary ms-2">
-                                <i class="fas fa-flask me-1"></i>Try it with 6 sample sheets
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -163,6 +167,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.js"></script>
-    <script src="/static/js/upload.js?v=2.0.3"></script>
+    <script src="/static/js/upload.js?v=2.0.4"></script>
 </body>
 </html>

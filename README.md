@@ -2,6 +2,8 @@
 
 Upload a teacher's reference answer sheet and a class's answer sheets (PDF); get a 0–10 score per question, a class dashboard, and PDF reports for every student.
 
+**▶ [Live demo](https://huggingface.co/spaces/Aum07/ai-answer-sheet-grader)**: click **Try the demo** to grade six sample sheets. *(Free hosting sleeps when idle; the first visit can take about a minute to wake up.)*
+
 <!-- Add a demo GIF here: docs/demo.gif (record the upload -> results flow) -->
 
 [![CI](https://github.com/Aum07/ai-answer-sheet-grader/actions/workflows/ci.yml/badge.svg)](https://github.com/Aum07/ai-answer-sheet-grader/actions/workflows/ci.yml)

@@ -85,6 +85,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Demo: grade built-in sample sheets on the server (no uploads needed)
     document.getElementById('demoBtn').addEventListener('click', () => runEvaluation(() => fetch('/demo/', { method: 'POST' })));
 
+    // Homepage "Try the demo" links here with ?demo=1: start the demo straight away
+    if (new URLSearchParams(window.location.search).get('demo') === '1') {
+        document.getElementById('demoBtn').click();
+    }
+
     // Handle form submission
     document.getElementById('submitBtn').addEventListener('click', () => {
         const formData = new FormData();
