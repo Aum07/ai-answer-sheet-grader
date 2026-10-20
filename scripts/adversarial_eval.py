@@ -107,7 +107,7 @@ def main() -> None:
     for mname, (model, scaler) in models.items():
         results[mname] = {}
         for mode in ("defences_off", "defences_on"):
-            def score(name, mode=mode):
+            def score(name, mode=mode, model=model, scaler=scaler):  # bind loop values now
                 if mode == "defences_off":
                     return predict_scores(raw[name], model, scaler)
                 return apply_caps(predict_scores(clean[name], model, scaler), flags[name])

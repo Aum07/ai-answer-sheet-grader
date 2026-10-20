@@ -144,7 +144,7 @@ def main() -> None:
         base = sample_answers(150, 42)
         orig, _ = llm_scores(grader, base, "original")
         attacks = {"original_mean": float(orig.mean()), "attacks": {}}
-        for name, (_, expected, desc) in ATTACKS.items():
+        for name, (_, expected, _desc) in ATTACKS.items():
             s, _ = llm_scores(grader, attacked(base, name, rng), name)
             attacks["attacks"][name] = {
                 "expected": expected,
