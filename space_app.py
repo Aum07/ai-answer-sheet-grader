@@ -50,4 +50,5 @@ def _warm_up() -> None:
 
 if __name__ == "__main__":
     threading.Thread(target=_warm_up, daemon=True).start()
-    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 7860)))
+    # Spaces route traffic to 7860 (GRADIO_SERVER_PORT); $PORT points elsewhere on ZeroGPU
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("GRADIO_SERVER_PORT", 7860)))
