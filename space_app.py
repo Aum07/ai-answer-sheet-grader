@@ -1,8 +1,9 @@
 """Hugging Face Spaces entry point.
 
-Serves the project's own website and API (app/main.py) at "/". Free ZeroGPU hardware expects a
-Gradio app with a @spaces.GPU function, so a small Gradio page is also mounted at /gradio.
-Grading runs on CPU. Locally, just use: uvicorn app.main:app
+Free ZeroGPU hardware only accepts a Space whose web server is started by Gradio's launch()
+and that declares a @spaces.GPU function. So Gradio starts the server, and the project's own
+website and API (app/main.py) are then placed in front of Gradio's routes: visitors get the
+normal site at "/". Grading runs on CPU. Locally, just use: uvicorn app.main:app
 """
 
 # `spaces` (ZeroGPU) must be imported before torch. It only exists on Hugging Face.
@@ -11,13 +12,12 @@ try:
 except ImportError:
     spaces = None
 
-import os  # noqa: E402
 import threading  # noqa: E402
 
 import gradio as gr  # noqa: E402
-import uvicorn  # noqa: E402
 
-from app.main import app  # noqa: E402
+from app.main import app as site  # noqa: E402
+from grader import scoring  # noqa: E402
 from grader.features import get_embedder  # noqa: E402
 
 REPO_URL = "https://github.com/Aum07/ai-answer-sheet-grader"
@@ -32,12 +32,8 @@ if spaces is not None:
         return torch.cuda.is_available()
 
 
-with gr.Blocks(title="AI Answer Sheet Grader") as status_page:
-    gr.Markdown(
-        f"# AI Answer Sheet Grader\nThe app lives at the [main page](/). Source: [GitHub]({REPO_URL})."
-    )
-
-app = gr.mount_gradio_app(app, status_page, path="/gradio")
+with gr.Blocks(title="AI Answer Sheet Grader") as placeholder:
+    gr.Markdown(f"# AI Answer Sheet Grader\nSee the [main page](/) or the [source on GitHub]({REPO_URL}).")
 
 
 def _warm_up() -> None:
@@ -49,6 +45,13 @@ def _warm_up() -> None:
 
 
 if __name__ == "__main__":
+    placeholder.launch(server_name="0.0.0.0", server_port=7860, ssr_mode=False, prevent_thread_lock=True)
+
+    # Our routes go first, so "/" and the rest serve the project's own site; Gradio's internal
+    # /gradio_api routes stay available behind them.
+    placeholder.app.router.routes[0:0] = list(site.router.routes)
+    scoring.load_model()  # normally done by the site's own startup hook
     threading.Thread(target=_warm_up, daemon=True).start()
-    # Spaces route traffic to 7860 (GRADIO_SERVER_PORT); $PORT points elsewhere on ZeroGPU
-    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("GRADIO_SERVER_PORT", 7860)))
+    print("Site routes mounted in front of Gradio")
+
+    placeholder.block_thread()
