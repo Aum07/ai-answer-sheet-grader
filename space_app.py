@@ -4,13 +4,30 @@ The Space runs this file and serves whatever listens on port 7860, so it starts 
 FastAPI app (web UI + API) instead of a Gradio interface. Locally, use `uvicorn app.main:app`.
 """
 
-import os
-import threading
+# On Hugging Face ZeroGPU hardware, `spaces` must be imported before torch, and the Space must
+# declare at least one @spaces.GPU function. The grader itself runs on CPU; this check just
+# satisfies that requirement. Locally (no `spaces` package) it's skipped.
+try:
+    import spaces
+except ImportError:
+    spaces = None
 
-import uvicorn
+import os  # noqa: E402
+import threading  # noqa: E402
 
-from app.main import app
-from grader.features import get_embedder
+import uvicorn  # noqa: E402
+
+from app.main import app  # noqa: E402
+from grader.features import get_embedder  # noqa: E402
+
+if spaces is not None:
+
+    @spaces.GPU
+    def gpu_available() -> bool:
+        """Reports whether a GPU is attached (required by ZeroGPU; not used for grading)."""
+        import torch
+
+        return torch.cuda.is_available()
 
 
 def _warm_up() -> None:
