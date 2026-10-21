@@ -1,203 +1,185 @@
 # AI Answer Sheet Grader
 
-Upload a teacher's reference answer sheet and a class's answer sheets (PDF); get a 0–10 score per question, a class dashboard, and PDF reports for every student.
+**In short:** you upload a teacher's answer sheet and a class's answer sheets as PDFs, and the app gives each answer a score out of 10, a class dashboard, and a PDF report for every student.
 
-**▶ [Live demo](https://huggingface.co/spaces/Aum07/ai-answer-sheet-grader)**: click **Try the demo** to grade six sample sheets. The demo runs the **synthetic multi-subject model** (`MODEL_NAME=synthetic`), since uploads can be from any subject; the Mohler model is trained only on computer-science answers (see [Results](#results) for how the two compare). *(Free hosting sleeps when idle; the first visit can take about a minute to wake up.)*
+- **What I found:** training on AI-generated answers looks great on paper but falls apart on real students. Retraining on 2,273 real, teacher-marked answers fixed most of that.
+- **Best result:** combining a small classic model with an LLM agrees with human markers better than the two markers agree with each other (QWK 0.67 vs 0.49).
+- **I also tried to cheat it.** A list of keywords originally scored 9.8/10. After adding checks, it scores 3.5.
+- **▶ [Try the live demo](https://huggingface.co/spaces/Aum07/ai-answer-sheet-grader)** (free hosting, so the first load can take about a minute).
 
-<!-- Add a demo GIF here: docs/demo.gif (record the upload -> results flow) -->
+![Demo: grading a class of answer sheets](docs/demo.gif)
 
 [![CI](https://github.com/Aum07/ai-answer-sheet-grader/actions/workflows/ci.yml/badge.svg)](https://github.com/Aum07/ai-answer-sheet-grader/actions/workflows/ci.yml)
 ![Python 3.10](https://img.shields.io/badge/python-3.10-blue)
 
-**Stack:** Python · FastAPI · Sentence-Transformers (all-mpnet-base-v2) · OpenAI API (structured outputs) · scikit-learn · mord (ordinal regression) · NLTK · PyMuPDF + Tesseract OCR · ReportLab · Docker · GitHub Actions
-
-### Key findings
-
-- A model trained on **4,500 LLM-generated answers** scored QWK 0.88 on unseen synthetic questions but only **0.31 on real student answers**, worse than plain embedding similarity.
-- Retrained on **real, human-marked answers** (Mohler et al. 2011) with nested cross-validation and a new sentence-level *coverage* feature, it reaches **QWK 0.43 / Pearson 0.49** with just 5 features: about **87% of human–human agreement on QWK** (0.49) and 82% on Pearson (0.60).
-- A feature ablation showed that the grammar-style and readability features which drove the synthetic results add almost nothing on real answers.
-- An **LLM grader** (gpt-4o-mini, zero-shot, rubric prompt) agrees with each human marker about as well as the two markers agree with each other (mean Pearson r 0.63 vs 0.59), for **$0.05 per 2,273 answers**. Averaging it with the classic model gives the best overall agreement (QWK 0.67 vs the human average).
-- **Adversarial tests broke the classic model**: a bare list of keywords scored 9.8/10 and restating the question 7.8/10. Calibrated defences cut those to **3.5 and 2.2**, while wrongly capping only **1.9% of honest answers** (QWK 0.429 → 0.426). Padding is only partly defended (see below).
+**Built with:** Python, FastAPI, Sentence-Transformers (all-mpnet-base-v2), OpenAI API, scikit-learn, mord, NLTK, PyMuPDF, Tesseract OCR, ReportLab, Docker, GitHub Actions
 
 ---
+
+## Why I built this
+
+Marking written exam answers takes teachers hours, and two teachers marking the same answer often give different scores. I wanted to see how close a computer could get to a human marker, and, just as important, where it goes wrong.
+
+This started as my final-year BTech project at D Y Patil International University (2025). Since then I've rebuilt it properly: a tested code structure, reproducible experiments, testing on real marked answers, and a deployed demo.
 
 ## How it works
 
 ```mermaid
 flowchart LR
-    A[Reference PDF] --> C[Text extraction<br/>PyMuPDF, OCR fallback]
+    A[Reference PDF] --> C[Read the text<br/>PyMuPDF, OCR if needed]
     B[Student PDFs] --> C
-    C --> D[Question / answer parsing<br/>+ alignment by number or text]
-    D --> E[Features<br/>embedding similarity, length,<br/>POS profile, readability]
-    E --> F[Ordinal model<br/>LogisticAT, 0-10]
-    F --> G[JSON results + dashboard]
-    F --> H[PDF / ZIP reports]
+    C --> D[Split into questions<br/>and match them up]
+    D --> E[Compare each answer<br/>with the reference]
+    E --> F[Score 0-10]
+    F --> G[Dashboard]
+    F --> H[PDF reports]
 ```
 
-1. **Extract** text from each PDF page; image-only pages go through Tesseract OCR at 300 dpi. Broken font ligatures common in Word exports (`QuesƟon`, `(cid:415)`) are repaired.
-2. **Parse** `Question N … Answer: …` blocks (tolerant of `Q1.`, missing colons, glued lines) and align each student answer to the reference question by number, falling back to question-text similarity. Blank answers score 0 without going through the model.
-3. **Featurise** each (reference, student) pair:
+1. **Read the PDFs.** Text is pulled from each page. Scanned pages go through OCR. Some Word exports break letters in odd ways (`QuesƟon` instead of `Question`), so those get repaired.
+2. **Match questions.** The app finds each `Question N … Answer: …` block and pairs every student answer with the right question in the reference. Blank answers get 0 straight away.
+3. **Measure each answer.** For every answer it works out a handful of numbers:
+   - **Meaning:** how close the answer is in meaning to the reference answer (and to the question), using sentence embeddings.
+   - **Length:** how long it is compared with the reference.
+   - **Coverage:** how many of the reference's key sentences the student actually covered.
+   - Grammar-style and readability measures (these turned out not to help on real answers; more on that below).
+4. **Check for cheating.** Repeated sentences and filler are stripped out. Answers that just copy the question, are only a list of keywords, or answer a different question get capped and flagged for the teacher.
+5. **Score it.** An ordinal regression model turns those numbers into a mark from 0 to 10. "Ordinal" just means it knows a 6 is closer to a 7 than to a 2, which a normal classifier doesn't.
+6. **Report.** Results show up in the web app, and you can download a PDF per student or a ZIP for the whole class.
 
-   | Group | Features |
-   |---|---|
-   | Meaning | cosine similarity of mpnet embeddings: answer↔reference, answer↔question |
-   | Length | student length ÷ reference length |
-   | Grammar style | differences in noun / verb / adjective / adverb share and tag diversity, overall POS similarity |
-   | Readability | Flesch–Kincaid grade ratio |
-   | Coverage | share of the reference answer's sentences matched by some student sentence (mean best similarity, and share above 0.5) |
+## The data
 
-4. **Clean and check integrity** (`grader/integrity.py`): repeated and filler sentences are removed before scoring; answers that copy the question, are bare keyword lists, or answer a different question are capped and flagged for teacher review (see [Robustness](#4-robustness-to-gaming-the-grader)).
-5. **Score** with an ordinal logistic model (all-threshold LogisticAT). Marks are ordered categories, so ordinal regression fits better than plain classification (it knows 6 is closer to 7 than to 2). A thin wrapper (`grader/ordinal.py`) lets it train on score sets with gaps, which real marks often have.
-6. **Report**: JSON for the web UI, plus per-student PDFs and a class ZIP with a summary.
-
-## Data
-
-| Dataset | Answers | Questions | Labels | Role |
+| Dataset | Answers | Questions | Who marked it | Used for |
 |---|---|---|---|---|
-| **Synthetic** (`data/synthetic/`) | 4,500 | 1,496, mixed subjects | LLM-assigned target score 0–10, ~400 per level | Original training set |
-| **Mohler et al. 2011** ([nkazi/MohlerASAG](https://huggingface.co/datasets/nkazi/MohlerASAG), CC BY 4.0) | 2,273 | 79, CS / data structures | Two human graders, 0–5 (averaged, ×2 → 0–10) | Real-world evaluation and training |
+| **Synthetic** (`data/synthetic/`) | 4,500 | 1,496, many subjects | An LLM | The original version of the project |
+| **Mohler et al. 2011** ([link](https://huggingface.co/datasets/nkazi/MohlerASAG), CC BY 4.0) | 2,273 | 79, computer science | Two human teachers | Real-world testing and training |
 
-For the synthetic set, questions came from the web or an LLM, and an LLM wrote a reference answer plus student answers in different styles and quality levels. A model trained on it learns how an LLM *imitates* a weak or strong answer, which the results below show is not the same as how humans mark.
+The synthetic set was made by asking an LLM to write a reference answer and then student answers of different quality. The Mohler set is real answers from students at the University of North Texas, each marked by two teachers.
 
-Mohler answers are real student responses from a University of North Texas course. Exercises graded out of 10 are rescaled to 0–5 before averaging (`scripts/prepare_mohler.py`).
+That difference turned out to be the most important thing in this project.
 
-## Results
+## What I found
 
-All splits hold out **whole questions**, so every number is for questions the model never saw during training. Metrics: QWK (quadratic weighted kappa, the standard agreement measure in automated scoring), Pearson r on the 0–5 scale (as reported in the Mohler paper), MAE on 0–10, and the share of predictions within ±1 mark.
+### How to read the numbers
 
-### 1. Synthetic data (`python scripts/train.py`)
+The main score I use is **QWK** (quadratic weighted kappa). It measures how well two markers agree. 1.0 means they always agree, 0 means no better than chance, and being off by a lot is punished more than being off by a little.
 
-225 held-out questions (675 answers); 1,047 questions for training.
+One important point: **even the two human teachers only reach QWK 0.49 with each other.** So that, not 1.0, is the realistic target. A model that matches 0.49 is marking about as consistently as a second teacher would.
 
-| Model | QWK | MAE | Within ±1 |
-|---|---|---|---|
-| Predict the mean | – | 2.71 | 29% |
-| Embedding similarity only | 0.677 | 1.68 | 52% |
-| **LogisticAT, 10 features** | **0.877** | 1.14 | 72% |
-| Ridge (rounded) | 0.864 | 1.18 | 69% |
-| Gradient boosting (rounded) | 0.881 | 1.11 | 75% |
+In every test, the model is scored on questions it never saw during training.
 
-The original project used a random split of answers (QWK 0.894). Holding out whole questions costs little, and gradient boosting's small lead is within noise and overfits more (train/test QWK 0.911/0.881 vs 0.882/0.877).
+### 1. AI-generated training data doesn't transfer to real students
 
-### 2. Real student answers (`python scripts/evaluate_mohler.py`)
+On synthetic data, the model looked excellent: **QWK 0.88** on unseen questions.
 
-5-fold cross-validation grouped by question, against the average of the two human graders.
+On real student answers, the same model dropped to **QWK 0.31**. That's worse than just measuring how similar the answer is to the reference (0.33).
 
-| | QWK | Pearson r (0–5) | MAE | Within ±1 |
-|---|---|---|---|---|
-| *Human vs human (grader 1 vs grader 2)* | *0.491* | *0.597* | *1.50* | *59%* |
-| Synthetic-trained model, applied as-is | 0.312 | 0.323 | 1.94 | 55% |
-| Embedding similarity only (fit on Mohler) | 0.333 | 0.429 | 1.49 | 61% |
-| Trained on synthetic + Mohler | 0.370 | 0.374 | 1.69 | 58% |
-| **Trained on Mohler** | **0.421** | **0.476** | 1.32 | 66% |
-
-- **Synthetic training doesn't transfer.** On real answers the synthetic model is worse than a one-feature similarity baseline, and adding synthetic data to real data *lowers* performance.
-- **Calibration isn't the problem, ranking is.** Humans average 8.4/10 and the synthetic model 8.1, both scoring 72% of answers 8+. The model just can't tell which real answers are better.
-- **Why every QWK here is lower:** 72% of real answers score 8+, so the range is compressed. That depresses QWK even between the two humans, so the human–human row, not 1.0, is the ceiling to compare against.
-
-### 3. Feature ablation on real answers (`python scripts/tune_mohler.py`)
-
-Nested CV: `alpha` is chosen inside each training fold (grid 0.1–100), never on test questions. Features are computed on cleaned answers.
-
-| Feature set | # | QWK | Pearson r |
-|---|---|---|---|
-| **Meaning + length + coverage (selected)** | 5 | **0.429** | **0.491** |
-| All except readability, + coverage | 11 | 0.429 | 0.484 |
-| All 10 + coverage | 12 | 0.428 | 0.483 |
-| All 10 original features | 10 | 0.421 | 0.477 |
-| Meaning + length | 3 | 0.417 | 0.482 |
-| Without length | 9 | 0.378 | 0.436 |
-| Meaning + coverage | 4 | 0.368 | 0.437 |
-| Answer–reference similarity only | 1 | 0.357 | 0.433 |
-| *Human vs human* | | *0.491* | *0.597* |
-
-- **Length is the most useful feature after meaning** (removing it costs 0.04 QWK); in real answers, longer usually means more complete.
-- **Coverage helps a little and makes the model simpler**: 5 features match or beat 12.
-- **Grammar-style and readability features barely matter on real data**, unlike on synthetic data, where they lifted QWK from 0.68 to 0.88. That gap is the clearest sign the synthetic model learned the generator's writing style.
-
-**Shipped model** (`models/mohler/`): the selected 5 features, `alpha` re-chosen by grouped CV on all data, then fitted on all 2,273 answers. The synthetic model is kept in `models/synthetic/` for comparison.
-
-### 4. Robustness to gaming the grader
-
-`python scripts/adversarial_eval.py` takes 150 real answers that humans scored ≤ 7/10, applies each attack, and compares scores with the defences off and on (shipped Mohler model).
-
-| Attack | Ideal | Mean score: no defences | With defences | Capped / flagged |
-|---|---|---|---|---|
-| *Original answers* | | 8.30 | 8.15 | 3% / 7% |
-| Keyword list (15 terms, no sentences) | no increase | **9.83** | **3.47** | 81% / 81% |
-| Restating the question | decrease | **7.83** | **2.19** | 97% / 97% |
-| Answer to another question on the same sheet | decrease | 6.79 | 5.77 | 25% / 55% |
-| Padding with ~70 words of filler | no increase | 9.47 | 8.78 | 1% / 7% |
-| Same answer written twice | no increase | 8.67 | 8.25 | 3% / 7% |
-| First half only | decrease | 7.36 | 7.11 | 5% / 14% |
-| Copying the reference (control) | increase | 10.00 | 10.00 | 0% / 0% |
-
-**Defences** (`grader/integrity.py`), with thresholds calibrated on half the Mohler questions at fixed false-positive rates and reported on the other half (`python scripts/calibrate_integrity.py`):
-
-| Defence | On honest answers | Effect |
+| Model, tested on real answers | QWK | Pearson r |
 |---|---|---|
-| Remove repeated and filler sentences | keeps 97.7% of honest sentences | removes 60% of filler sentences (a filler set separate from the attack's) |
-| Copies-the-question check | 0.4% false positives | catches 97% |
-| Keyword-list check | 0.7% false positives | catches 81% |
-| Off-topic, high confidence (score capped) | 0.8% false positives | catches 30% of wrong-question answers |
-| Off-topic, possible (review flag only) | 2.9% false positives | catches 60% |
+| *Teacher 1 vs teacher 2* | *0.49* | *0.60* |
+| Trained on synthetic data only | 0.31 | 0.32 |
+| Similarity to the reference only | 0.33 | 0.43 |
+| Trained on synthetic + real data | 0.37 | 0.37 |
+| **Trained on real data only** | **0.42** | **0.48** |
 
-Across all real answers, 1.9% are capped, and their human score averages 6.0 vs 8.4 for the rest. Agreement with humans barely moves (QWK 0.429 → 0.426).
+Adding synthetic data to the real data actually made things worse. My explanation: the synthetic model learned how an LLM *pretends* to write a weak or strong answer, not how real students write or how teachers mark.
 
-**What's still open:**
-- **Padding and repetition only partly defended.** Some filler sentences are close enough to the topic to survive cleaning.
-- **Truncation is barely penalised.** The model doesn't really know what a complete answer looks like.
-- **Wrong-question answers on the same sheet are hard to catch**, because questions in one assignment overlap heavily (stacks vs queues). The off-topic check trades catch rate for very few false alarms on honest students.
+Interestingly, the synthetic model's average score was about right (8.1 vs the teachers' 8.4). It just couldn't tell which real answers were better than others.
 
-These are limits of similarity-based features, and they're what the planned LLM rubric grader is meant to address, measured on the same benchmark.
+### 2. Simpler was better
 
-### 5. LLM grader vs classic model (`python scripts/evaluate_llm.py --attacks`)
+I tested which measurements actually matter on real answers (with nested cross-validation, so tuning never touched the test questions).
 
-`grader/llm_grader.py` sends all answers to a question in one request, with a rubric prompt (0–10 bands; don't reward length, repetition, filler, restated questions or keyword lists) and a JSON schema for the reply. It returns a score **and written feedback** per answer. No Mohler examples are used in the prompt (zero-shot). The classic model's numbers are question-grouped cross-validation predictions on the same answers.
+| What the model uses | Number of features | QWK |
+|---|---|---|
+| **Meaning + length + coverage** | **5** | **0.43** |
+| Everything | 12 | 0.43 |
+| Meaning + length | 3 | 0.42 |
+| Everything except length | 9 | 0.38 |
+| Similarity only | 1 | 0.36 |
 
-**Agreement with each human marker separately** (the fair comparison: averaging two markers removes some of their noise, which would flatter any model compared with the average):
+- **Length matters most after meaning.** In real answers, longer usually means more complete.
+- **Grammar style and readability barely helped at all on real answers**, even though they were the reason the synthetic model scored so high. That was the clearest sign it had learned the LLM's writing style rather than what makes an answer good.
 
-| | r vs marker 1 | r vs marker 2 | QWK vs marker 1 | QWK vs marker 2 |
-|---|---|---|---|---|
-| *Marker 1 vs marker 2* | *0.59* | | *0.49* | |
-| Classic model (5 features) | 0.47 | 0.43 | 0.45 | 0.30 |
-| **LLM (gpt-4o-mini)** | 0.55 | **0.71** | 0.32 | **0.61** |
-| **Hybrid (mean of both)** | **0.58** | 0.69 | **0.48** | **0.63** |
+So the shipped model (`models/mohler/`) uses just those 5 features. That gets it to about **87% of the agreement the two teachers have with each other**.
 
-**Against the average of both markers:**
+### 3. I tried to game it, and it broke
 
-| | QWK | Pearson r (0–5) | MAE | Within ±1 | Mean score |
-|---|---|---|---|---|---|
-| Classic model | 0.431 | 0.492 | 1.30 | 66% | 8.9 |
-| LLM | 0.505 | 0.718 | 2.31 | 43% | 6.2 |
-| **Hybrid** | **0.668** | **0.720** | **1.29** | 60% | – |
-| *Humans* | | | | | *8.4* |
+I took 150 real answers that teachers marked 7/10 or lower, then changed them the way a student trying to game the system might.
 
-- **The LLM ranks answers far better** than the feature model (r 0.72 vs 0.49), at human-marker level.
-- **But it is harsher than these markers** (mean 6.2 vs 8.4), hence its larger MAE. The hybrid combines the LLM's ranking with the classic model's calibration and is best on almost every measure.
-- **Cost and speed:** 152 API calls for 2,273 answers, ~$0.05 in total (about $0.02 per 1,000 answers), with 8 requests in parallel.
-
-**Under attack** (same 150 weak answers and attacks as section 4):
-
-| Attack | Classic, no defences | Classic + defences | **LLM** |
+| Trick | Should the score... | Before defences | After defences |
 |---|---|---|---|
-| *Original answers* | 8.30 | 8.15 | **3.37** |
-| Padding | 9.47 | 8.78 | **2.35** |
-| Repetition | 8.67 | 8.25 | **3.45** |
-| Restating the question | 7.83 | 2.19 | **0.00** |
-| Keyword list | 9.83 | **3.47** | 5.97 |
-| Answer to another question | 6.79 | 5.77 | **0.39** |
-| First half only | 7.36 | 7.11 | **2.23** |
-| Copy of the reference | 10.00 | 10.00 | 10.00 |
+| *Original answer* | | 8.30 | 8.15 |
+| Just a list of 15 keywords | not go up | **9.83** | **3.47** |
+| Restating the question | go down | **7.83** | **2.19** |
+| Answer to a different question | go down | 6.79 | 5.77 |
+| Adding ~70 words of filler | not go up | 9.47 | 8.78 |
+| Writing the answer twice | not go up | 8.67 | 8.25 |
+| Only the first half | go down | 7.36 | 7.11 |
+| Copying the reference (sanity check) | go up | 10.00 | 10.00 |
 
-The LLM resists padding, repetition, off-topic and restated answers, which were exactly the classic model's open weaknesses, and correctly scores these weak answers low (3.4 vs 8.3). Its one weakness, **keyword lists** (32% still score 8+), is the attack the integrity checks catch best (81%). So the two approaches are complementary.
+A list of keywords scoring nearly full marks was a real problem. So I added checks in `grader/integrity.py`, and set their thresholds so they almost never punish honest students:
 
-**Caveats:**
-- Mohler has been public since 2011, so an LLM may have seen it during training. The results could be optimistic for unseen material.
-- One model and one prompt version (`v1`), temperature 0, no prompt tuning on this data.
-- Scores and feedback come from a third-party API: answers are sent to OpenAI, which matters for real student data under GDPR.
+| Check | Wrongly flags honest answers | Catches |
+|---|---|---|
+| Copies the question | 0.4% | 97% |
+| Just a keyword list | 0.7% | 81% |
+| Clearly off-topic (score capped) | 0.8% | 30% |
+| Possibly off-topic (flag for the teacher only) | 2.9% | 60% |
+| Remove repeated / filler sentences | keeps 97.7% of real sentences | removes 60% of filler |
 
-## Quick start
+Overall, only 1.9% of real answers get capped, and those answers had a much lower teacher score on average (6.0 vs 8.4), so the checks are mostly catching weak answers. Agreement with teachers barely changed (0.429 → 0.426).
+
+**Still not solved:** filler that's close to the topic, cutting an answer in half, and answering a neighbouring question (like stacks vs queues on the same sheet). Similarity-based scoring just can't tell these apart well. That's why I tried an LLM next.
+
+### 4. An LLM grader, and combining the two
+
+I gave gpt-4o-mini a marking guide (score bands from 0 to 10, plus "don't reward length, repetition, filler, restating the question or keyword lists") and asked it to score every answer and write feedback. I gave it no examples from the dataset.
+
+**Compared with each teacher separately:**
+
+| | Agreement with teacher 1 (r) | Agreement with teacher 2 (r) |
+|---|---|---|
+| *Teacher 1 vs teacher 2* | *0.59* | |
+| Classic model | 0.47 | 0.43 |
+| LLM | 0.55 | **0.71** |
+| **Average of both** | **0.58** | 0.69 |
+
+**Compared with the teachers' average:**
+
+| | QWK | Pearson r | Average error (out of 10) | Average score |
+|---|---|---|---|---|
+| Classic model | 0.43 | 0.49 | 1.30 | 8.9 |
+| LLM | 0.51 | 0.72 | 2.31 | 6.2 |
+| **Average of both** | **0.67** | **0.72** | **1.29** | |
+| *Teachers* | | | | *8.4* |
+
+What this means in plain terms:
+
+- **The LLM is much better at ranking answers** from best to worst, about as good as a human teacher.
+- **But it's a stricter marker** than these teachers (average 6.2 vs 8.4).
+- **Averaging the two gets the best of both:** the LLM's sense of which answers are better, and the classic model's sense of what score teachers actually give.
+- **It's cheap:** about $0.05 to mark all 2,273 answers.
+
+The LLM also handled most of the tricks that fooled the classic model:
+
+| Trick | Classic + defences | LLM |
+|---|---|---|
+| *Original weak answers* | 8.15 | **3.37** |
+| Filler | 8.78 | **2.35** |
+| Repeating the answer | 8.25 | **3.45** |
+| Restating the question | 2.19 | **0.00** |
+| Keyword list | **3.47** | 5.97 |
+| Answer to another question | 5.77 | **0.39** |
+| First half only | 7.11 | **2.23** |
+
+Its one weak spot is keyword lists, which happens to be exactly what the integrity checks catch best. So the two approaches cover each other.
+
+**Things to keep in mind:**
+- The Mohler dataset has been public since 2011, so the LLM may have seen it in training. Results on brand-new questions could be lower.
+- I tested one model with one prompt and didn't tune the prompt on this data.
+- The LLM route sends student answers to OpenAI, which matters under GDPR for real student data.
+
+## Try it yourself
 
 ```bash
 git clone https://github.com/Aum07/ai-answer-sheet-grader.git
@@ -207,18 +189,18 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-Open http://127.0.0.1:8000, upload `samples/ai/reference.pdf` and a few `samples/ai/student_*.pdf`, and click **Evaluate**. The first run downloads the embedding model (~420 MB). OCR on scanned pages needs [Tesseract](https://github.com/tesseract-ocr/tesseract).
+Open http://127.0.0.1:8000, upload `samples/ai/reference.pdf` and a few `samples/ai/student_*.pdf` files, and click **Evaluate**. The first run downloads the embedding model (~420 MB). Scanned pages need [Tesseract](https://github.com/tesseract-ocr/tesseract) installed.
 
-Use the synthetic model instead with `MODEL_NAME=synthetic` (PowerShell: `$env:MODEL_NAME="synthetic"`).
+The app uses the model trained on real answers by default. To use the synthetic one instead, set `MODEL_NAME=synthetic` (PowerShell: `$env:MODEL_NAME="synthetic"`). The live demo uses the synthetic model, since people can upload sheets from any subject and the real-data model has only seen computer science.
 
-**Docker:**
+**With Docker:**
 
 ```bash
 docker build -t answer-grader .
 docker run -p 8000:7860 answer-grader        # then open http://localhost:8000
 ```
 
-**API:** interactive docs at `/docs`.
+**API** (full docs at `/docs`):
 
 ```bash
 curl -X POST http://127.0.0.1:8000/evaluate/ \
@@ -227,65 +209,65 @@ curl -X POST http://127.0.0.1:8000/evaluate/ \
   -F student_pdfs=@samples/ai/student_02.pdf
 ```
 
-| Endpoint | Purpose |
+| Endpoint | What it does |
 |---|---|
-| `POST /evaluate/` | Grade a reference PDF + up to 30 student PDFs |
+| `POST /evaluate/` | Grade a reference PDF and up to 30 student PDFs |
 | `GET /download/{request_id}?student=Name` | One student's PDF report |
-| `GET /download-multiple/{request_id}` | ZIP of all reports + class summary |
-| `GET /health` | Liveness, whether the model is loaded, and which one |
+| `GET /download-multiple/{request_id}` | ZIP with every report and a class summary |
+| `GET /health` | Check the app is running and which model is loaded |
 
-Configuration is via environment variables (see `.env.example`): model choice, optional API key, upload limits, rate limit, CORS origins.
+Settings (model, API key, upload limits, rate limit, CORS) are environment variables; see `.env.example`.
 
 ## Reproduce the results
 
 ```bash
 pip install -r requirements-dev.txt
-python scripts/train.py               # synthetic: features (cached), models, reports/metrics_synthetic.json
-python scripts/prepare_mohler.py      # download + convert the human-marked dataset
-python scripts/evaluate_mohler.py     # transfer experiment -> reports/mohler_metrics.json
-python scripts/calibrate_integrity.py # defence thresholds at fixed false-positive rates -> models/integrity.json
-python scripts/tune_mohler.py         # ablation + nested CV, saves models/mohler/
-python scripts/adversarial_eval.py    # attacks with defences off vs on -> reports/adversarial.json
-$env:OPENAI_API_KEY = "sk-..."        # PowerShell (bash: export OPENAI_API_KEY=...)
-python scripts/evaluate_llm.py --attacks   # LLM vs classic vs hybrid, + attacks (~$0.10, cached)
+python scripts/train.py               # synthetic model
+python scripts/prepare_mohler.py      # download the real, teacher-marked answers
+python scripts/evaluate_mohler.py     # does the synthetic model work on real answers?
+python scripts/calibrate_integrity.py # set the cheating-check thresholds
+python scripts/tune_mohler.py         # feature comparison, trains the shipped model
+python scripts/adversarial_eval.py    # the gaming tests
+export OPENAI_API_KEY=...             # PowerShell: $env:OPENAI_API_KEY = "sk-..."
+python scripts/evaluate_llm.py --attacks   # LLM vs classic vs combined (~$0.10)
 pytest
 ```
 
-Embedding is the slow step (a few minutes on CPU); features are cached in `data/processed/`, so the experiments after that take seconds to a minute.
+The slow part is computing embeddings (a few minutes on a CPU). They're cached, so everything after that takes under a minute. Every result is saved as JSON in `reports/`.
 
-## Project layout
+## What's in the repo
 
 ```
-grader/        core library: extraction, features, integrity checks, ordinal model, scoring, pipeline, reports
-app/           FastAPI service + static web UI
-scripts/       training, Mohler download / evaluation / tuning
-models/        mohler/ (default) and synthetic/: model, scaler, model card; integrity.json thresholds
-reports/       metrics JSON for every experiment
-data/          synthetic training data (Mohler is downloaded, not committed)
-samples/       anonymised sample sheets (5 subjects, 89 students) + manifest.csv
-notebooks/     original exploratory notebook (model comparison, tuning, bias analysis)
-tests/         pytest suite (pipeline runs with a fake embedder, so no downloads in CI)
+grader/      the core: reading PDFs, features, cheating checks, model, scoring, reports
+app/         FastAPI app and web interface
+scripts/     training and every experiment above
+models/      the real-data model (default), the synthetic model, and check thresholds
+reports/     results of every experiment, as JSON
+data/        synthetic training data (the real dataset is downloaded, not stored here)
+samples/     anonymised sample sheets: 5 subjects, 89 students
+notebooks/   the original exploration notebook
+tests/       tests (these use a fake embedding model, so CI needs no downloads)
 ```
 
-## Limitations and responsible use
+## Limits and responsible use
 
-- **Modest agreement with humans.** Even the best model reaches ~80–86% of human–human agreement on one course's CS questions. Results on other subjects are untested.
-- **Can still be gamed.** Padding, repetition and wrong-question answers are only partly defended (see Robustness). Flagged answers need a teacher's review.
-- **Feedback in the app is still generic.** The LLM grader writes specific feedback, but isn't wired into the web app yet.
-- **Layout assumptions.** Sheets must label questions `Question N` / `QN` and answers `Answer:`. Tesseract OCR on handwriting is limited.
-- **Human in the loop.** Under the EU AI Act, AI systems used to evaluate learning outcomes are classed as *high-risk*. This tool is meant to **assist** a marker (triage, consistency checks), not to issue final grades. Uploads are processed in a temporary directory and deleted after each request; results stay in memory for one hour for report downloads.
+- **It's an assistant, not a replacement for a teacher.** Even the best version only gets close to how well two teachers agree, and only on one computer science course. Other subjects are untested.
+- **It can still be gamed** in some of the ways shown above. Flagged answers need a teacher to look at them.
+- **The web app's feedback is still generic.** The LLM writes specific feedback, but it isn't in the app yet.
+- **Sheets need a set layout:** questions labelled `Question N` or `QN`, and answers labelled `Answer:`. OCR on handwriting is weak.
+- **Under the EU AI Act, AI used to assess students counts as high-risk.** This tool is meant to help a teacher (spot inconsistencies, sort answers for review), not to hand out final grades on its own. Uploaded files are deleted after each request, and results are kept in memory for one hour so reports can be downloaded.
 
 ## Roadmap
 
-- [x] Evaluate on human-marked data (Mohler et al. 2011) against the human–human ceiling
-- [x] Feature ablation and nested-CV tuning on real answers
-- [x] Adversarial tests and calibrated defences (copying the question, keyword lists, filler, off-topic)
-- [x] LLM rubric grader with per-answer feedback, benchmarked on Mohler for agreement, cost and robustness
-- [ ] LLM grader and hybrid as options in the web app (with the integrity checks on top)
-- [ ] Calibrate LLM scores to the marking scale on training questions
-- [ ] Background grading jobs with live progress for large classes
-- [ ] Handwriting OCR (TrOCR or a vision model) with character error rate on scanned sheets
-- [ ] Hosted demo on Hugging Face Spaces
+- [x] Test on real, teacher-marked answers
+- [x] Compare features and tune properly on real answers
+- [x] Try to game the grader and add defences
+- [x] LLM grader with written feedback, tested on the same data
+- [x] Live demo on Hugging Face Spaces
+- [ ] Offer the LLM and combined grader in the web app
+- [ ] Adjust LLM scores to match how teachers actually mark
+- [ ] Background grading with a progress bar for large classes
+- [ ] Better handwriting recognition
 
 ## Citation
 
@@ -293,10 +275,8 @@ The real-data experiments use:
 
 > Michael Mohler, Razvan Bunescu and Rada Mihalcea. 2011. *Learning to Grade Short Answer Questions using Semantic Similarity Measures and Dependency Graph Alignments.* ACL 2011, pp. 752–762. https://aclanthology.org/P11-1076
 
-Dataset obtained from [huggingface.co/datasets/nkazi/MohlerASAG](https://huggingface.co/datasets/nkazi/MohlerASAG) (CC BY 4.0).
+Dataset from [huggingface.co/datasets/nkazi/MohlerASAG](https://huggingface.co/datasets/nkazi/MohlerASAG) (CC BY 4.0).
 
-## Background
+---
 
-Started as my final-year BTech project at D Y Patil International University (2025); rebuilt with a tested package structure, reproducible training, evaluation on real human-marked data and deployment tooling.
-
-**Author:** Aum Kanakiya · [LinkedIn](https://www.linkedin.com/in/aum-kanakiya-94aa59250/)
+**Aum Kanakiya** · [LinkedIn](https://www.linkedin.com/in/aum-kanakiya-94aa59250/)
