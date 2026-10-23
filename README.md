@@ -3,7 +3,7 @@
 **In short:** you upload a teacher's answer sheet and a class's answer sheets as PDFs, and the app gives each answer a score out of 10, a class dashboard, and a PDF report for every student.
 
 - **What I found:** training on AI-generated answers looks great on paper but falls apart on real students. Retraining on 2,273 real, teacher-marked answers fixed most of that.
-- **Best result:** combining a small classic model with an LLM agrees with human markers better than the two markers agree with each other (QWK 0.67 vs 0.49).
+- **Best result:** combining a small classic model with an LLM agrees with each teacher about as well as the two teachers agree with each other (QWK 0.48 and 0.63, vs 0.49 between the teachers).
 - **I also tried to cheat it.** A list of keywords originally scored 9.8/10. After adding checks, it scores 3.5.
 - **▶ [Try the live demo](https://huggingface.co/spaces/Aum07/ai-answer-sheet-grader)** (free hosting, so the first load can take about a minute).
 
@@ -135,14 +135,14 @@ Overall, only 1.9% of real answers get capped, and those answers had a much lowe
 
 I gave gpt-4o-mini a marking guide (score bands from 0 to 10, plus "don't reward length, repetition, filler, restating the question or keyword lists") and asked it to score every answer and write feedback. I gave it no examples from the dataset.
 
-**Compared with each teacher separately:**
+**Compared with each teacher separately** (the fair comparison: the two teachers are compared with each other in exactly the same way):
 
-| | Agreement with teacher 1 (r) | Agreement with teacher 2 (r) |
-|---|---|---|
-| *Teacher 1 vs teacher 2* | *0.59* | |
-| Classic model | 0.47 | 0.43 |
-| LLM | 0.55 | **0.71** |
-| **Average of both** | **0.58** | 0.69 |
+| | QWK vs teacher 1 | QWK vs teacher 2 | r vs teacher 1 | r vs teacher 2 | Within 1 mark of teacher 1 | Within 1 mark of teacher 2 |
+|---|---|---|---|---|---|---|
+| *Teacher 1 vs teacher 2* | *0.49* | | *0.59* | | *59%* | |
+| Classic model | 0.45 | 0.30 | 0.47 | 0.43 | **70%** | **58%** |
+| LLM | 0.32 | 0.61 | 0.55 | **0.71** | 38% | 46% |
+| **Average of both** | **0.48** | **0.63** | **0.58** | 0.69 | 46% | 48% |
 
 **Compared with the teachers' average:**
 
@@ -157,8 +157,10 @@ What this means in plain terms:
 
 - **The LLM is much better at ranking answers** from best to worst, about as good as a human teacher.
 - **But it's a stricter marker** than these teachers (average 6.2 vs 8.4).
-- **Averaging the two gets the best of both:** the LLM's sense of which answers are better, and the classic model's sense of what score teachers actually give.
-- **It's cheap:** about $0.05 to mark all 2,273 answers.
+- **Averaging the two gives the best overall agreement:** against each teacher separately it agrees about as well as the two teachers agree with each other (QWK 0.48 and 0.63, vs 0.49).
+- **The classic model alone still gives marks closer to the teacher's own** (within 1 mark for 70% and 58% of answers, vs 46% and 48% for the average of both), and it runs locally, for free, without sending student answers anywhere. So the better choice depends on what matters more: overall agreement and resistance to cheating, or close, private marks.
+- **Comparing with the teachers' average flatters every model.** Each teacher on their own scores QWK 0.80 to 0.87 against the average, simply because they are half of it. That's why the per-teacher table above is the fair one.
+- **It's cheap:** about $0.10 in API costs for this whole benchmark, including the cheating tests below.
 
 The LLM also handled most of the tricks that fooled the classic model:
 
@@ -230,6 +232,7 @@ python scripts/tune_mohler.py         # feature comparison, trains the shipped m
 python scripts/adversarial_eval.py    # the gaming tests
 export OPENAI_API_KEY=...             # PowerShell: $env:OPENAI_API_KEY = "sk-..."
 python scripts/evaluate_llm.py --attacks   # LLM vs classic vs combined (~$0.10)
+python scripts/per_marker_eval.py         # every marker vs each teacher (no API calls)
 pytest
 ```
 
